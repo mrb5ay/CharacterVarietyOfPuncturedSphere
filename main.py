@@ -1,17 +1,55 @@
 import numpy as np
 from sympy import *
 
-a, b, c, d, e, f, g, h = symbols('a b c d e f g h')
+from triangle import Triangle, Edge, Vertex
+from switch import diagonal_switch
 
-print(expand(c * (a + b - a + c*d + e*d) + c*e*d))
+######################################################
+# Initial Set Up
+######################################################
 
-A = Matrix([[a, b], [c, d]])
-B = Matrix([[e, f], [g, h]])
+# Initialize Vertices #
+v1 = Vertex("1")
+v2 = Vertex("2")
+v3 = Vertex("3")
+vA = Vertex("A")
+vB = Vertex("B")
 
-print(A)
-print(B)
-print(A * B)
+vertex_set = {v1, v2, v3, vA, vB}
 
-e_t1, y_e1 = symbols('e_t1, y_e1')
+# Initialize Edges #
+edge_set = set()
+for v in vertex_set:
+    for w in vertex_set:
+        if v != w:
+            edge_set.add(Edge(v, w))
 
-print(factor(e_t1 * y_e1 + y_e1 * y_e1))
+# Initialize Triangles #
+triangle_set = set()
+
+T_12B = Triangle(epsilon=1, v=[v1, v2, vB])
+T_2B3 = Triangle(epsilon=1, v=[v2, vB, v3])
+T_2A3 = Triangle(epsilon=1, v=[v2, vA, v3])
+T_1B3 = Triangle(epsilon=1, v=[v1, vB, v3])
+T_13A = Triangle(epsilon=1, v=[v1, v3, vA])
+T_12A = Triangle(epsilon=1, v=[v1, v2, vA])
+
+triangle_set.update([T_12B, T_2B3, T_2A3, T_1B3, T_13A, T_12A])
+
+######################################################
+# Doing Diagonal Switches
+######################################################
+
+for e in edge_set:
+    globals()[e.__str__()] = e
+    print(globals()[e.__str__()], globals()[e.__str__()].symbol)
+
+T_AB2, T_AB1, edge_set, triangle_set = diagonal_switch(T_12B, T_12A, edge_set, triangle_set)
+
+T_123, T_12A, edge_set, triangle_set = diagonal_switch(T_2A3, T_13A, edge_set, triangle_set)
+
+T_3AB, T_23A, edge_set, triangle_set = diagonal_switch(T_AB2, T_2B3, edge_set, triangle_set)
+
+print(edge_set)
+print(triangle_set)
+
